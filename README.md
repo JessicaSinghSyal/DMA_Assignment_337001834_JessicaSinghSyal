@@ -1,6 +1,7 @@
 # Data Mining Project: Credit Card Fraud Detection
 
-**Author:** Jessica  
+**Author:** Jessica Singh Syal
+UIN: 337001834
 **Course:** Data Mining (Spring 2026)  
 **Institution:** Texas A&M University
 
