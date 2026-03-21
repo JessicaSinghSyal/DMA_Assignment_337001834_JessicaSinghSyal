@@ -223,3 +223,36 @@ Email: jessicasinghsyalinternship@gmail.com
 
 ## Progress Made:
 
+
+Checkpoint 2 — Research Question Formation ✅ Complete
+
+Research Questions:
+
+RQ1 (Course — Anomaly Detection): Do fraud transactions form statistically isolable anomalies in feature space that tree-based detectors exploit better than density-based ones? Investigated using Isolation Forest and Local Outlier Factor across four feature subsets defined by the Anomaly Discriminability Index (ADI). Evaluated by PR-AUC at optimal F1 threshold.
+
+RQ2 (Course — Clustering): Does unsupervised transaction clustering recover behaviorally coherent fraud concentrations without access to labels? Investigated using DBSCAN and K-Means across 8D PCA and Top-ADI-8 feature representations. Evaluated by fraud enrichment ratio (cluster fraud rate / dataset fraud rate) and Silhouette coefficient.
+
+RQ3 (External — Deep Anomaly Detection): Does the normal-class transaction manifold carry a nonlinear reconstruction signal strong enough to outperform classical anomaly detectors? Investigated using a trained MLP Autoencoder (external technique) across 9 architecture configurations (bottleneck ∈ {4, 8, 16}, depth ∈ {1, 2, 3}). Evaluated by PR-AUC against the IF baseline (0.1691) and linear PCA proxy baseline (0.6210).
+
+Custom Metrics Defined:
+
+Two new metrics were introduced and empirically validated:
+
+1. Anomaly Discriminability Index (ADI) — ADI(f) = KS(f) × |mean_fraud(f) − mean_normal(f)|. Spans a 7229× range across 28 V features (V14 highest at 5.89, V22 lowest at 0.0008), formally defining the Top-ADI-8 feature subset used in RQ1 and RQ2.
+
+2. Temporal Fraud Concentration Score (TFCS) — KL divergence between fraud and normal temporal distributions. Observed TFCS = 0.2935, confirmed statistically significant at p < 0.001 (100th percentile of 200-permutation null distribution), with a 30.5× peak-to-trough fraud rate concentration across the 48-hour window.
+
+
+-Key EDA Findings
+
+Five new EDA analyses beyond Checkpoint 1 were conducted and used to directly motivate or rule out methodological choices:
+
+1. ADI ranking confirmed 64.6% of fraud is spatially isolated in PCA space (isolation ratio 5.08×), motivating both the feature subset sweep in RQ1 and the clustering approach in RQ2
+2. TFCS permutation test confirmed Time carries a statistically real fraud signal, justifying its inclusion as a feature
+3. Linear reconstruction proxy (PCA trained on normals only) achieved PR-AUC = 0.6210 — 359× above random — validating the autoencoder hypothesis before any deep learning is built
+
+
+
+
+
+
