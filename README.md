@@ -10,7 +10,7 @@
 
 ## 🎥 Project Video
 
-📺 **[Watch the 2-minute project video on YouTube →](YOUR_YOUTUBE_LINK_HERE)**
+📺 **[Watch the 2-minute project video on YouTube →](https://youtu.be/nSqaTecwNxg?si=OFX2HMlFCv9m2iU4)**
 
 ---
 
