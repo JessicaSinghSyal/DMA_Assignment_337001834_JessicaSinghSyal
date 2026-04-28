@@ -178,7 +178,7 @@ DMA_Assignment_337001834_JessicaSinghSyal/
 
 ---
 
-*Jessica Singh Syal | jessicasinghsyalinternship@gmail.com | Texas A&M University*
+*Jessica Singh Syal | jessicasinghsyal@tamu.edu | Texas A&M University*
 
 
 
