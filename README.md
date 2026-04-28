@@ -1,258 +1,184 @@
-# Data Mining Project: Credit Card Fraud Detection
+# 🔍 FraudLens: Isolating, Clustering, and Reconstructing Fraud Without a Single Label
 
-**Author:** Jessica Singh Syal
-UIN: 337001834
-**Course:** Data Mining (Spring 2026)  
-**Institution:** Texas A&M University
+> **Can unsupervised methods — trained with zero knowledge of fraud labels — learn representations of "normal" transaction behavior strong enough to flag the 0.17% of transactions that deviate from it?**
 
----
-
-## Project Overview
-
-This project explores three candidate datasets for data mining analysis, ultimately selecting **Credit Card Fraud Detection** for in-depth study. The project demonstrates:
-
-- Comparative analysis of multiple datasets
-- Exploratory Data Analysis (EDA) techniques
-- Handling extreme class imbalance (577:1 ratio)
-- Feature importance analysis on PCA-transformed features
-- Preparation for anomaly detection algorithms
+**Author:** Jessica Singh Syal | **UIN:** 337001834  
+**Course:** Data Mining — CSCE 676 (Spring 2026)  
+**Institution:** Texas A&M University  
 
 ---
 
-## Repository Structure
-```
-├── checkpoint1_dataset_selection_eda.ipynb    # Main Jupyter notebook
-├── README.md                                   # This file
-├── data/                                       # Downloaded datasets (not tracked)
-│   ├── creditcard.csv
-│   ├── ml-25m/
-│   └── smsspam/
-└── visualizations/                             # Generated plots
-    ├── fraud_eda_visualizations.png
-    ├── fraud_deep_dive_visualizations.png
-    ├── movielens_eda_visualizations.png
-    └── sms_spam_eda_visualizations.png
-```
+## 🎥 Project Video
+
+📺 **[Watch the 2-minute project video on YouTube →](YOUR_YOUTUBE_LINK_HERE)**
 
 ---
 
-## Datasets Analyzed
+## 👉 Start Here: [`main_notebook.ipynb`](main_notebook.ipynb)
 
-### 1. Credit Card Fraud Detection ✅ **SELECTED**
-- **Size:** 284,807 transactions, 67 MB
-- **Source:** Kaggle / TensorFlow Datasets
-- **Features:** 31 (Time, V1-V28 PCA components, Amount, Class)
-- **Challenge:** Extreme class imbalance (577:1)
-- **Use Case:** Anomaly detection, classification
-
-### 2. MovieLens 25M
-- **Size:** 25M ratings, 763 MB
-- **Source:** GroupLens Research
-- **Features:** User-movie ratings with timestamps
-- **Challenge:** Extreme sparsity (99.74%)
-- **Use Case:** Graph mining, collaborative filtering
-
-### 3. SMS Spam Collection
-- **Size:** 5,572 messages, 1 MB
-- **Source:** UCI Machine Learning Repository
-- **Features:** Text messages labeled spam/ham
-- **Challenge:** Small dataset size, temporal drift
-- **Use Case:** Text mining, classification
+This is the final curated notebook. It tells the complete story: motivation → EDA → methods → results → analysis. Run all cells top-to-bottom in Google Colab.
 
 ---
 
-## Key Findings
+## 📋 Project Overview
 
-### Credit Card Fraud Dataset
+Credit card fraud costs the global economy over **$33 billion annually**. Detection systems must identify 492 needles in a haystack of 284,315 transactions — *without* original transaction features (PCA-transformed for privacy), and often without reliable labels.
 
-**Most Discriminative Features:**
-1. **V3** - Mean difference: 7.05 between fraud/normal
-2. **V14** - Mean difference: 6.98
-3. **V17** - Mean difference: 6.68
+**FraudLens** investigates this challenge through three methodological pillars:
 
-**Counterintuitive Discovery:**
-- Fraud median amount (€9.25) is **lower** than normal (€22.00)
-- Fraudsters use many small transactions to avoid detection
+| Pillar | Technique | Type |
+|--------|-----------|------|
+| **Anomaly Detection** | Isolation Forest vs Local Outlier Factor | Course method |
+| **Unsupervised Clustering** | DBSCAN vs K-Means | Course method |
+| **Deep Reconstruction** | MLP Autoencoder | External (beyond course) |
 
-**Temporal Patterns:**
-- Fraud rates vary 30× across hours (0.04% to 1.17%)
-- Hour 13 has highest fraud rate (1.17%)
-
-**Class Imbalance:**
-- 492 frauds (0.17%) vs. 284,315 normal (99.83%)
-- Requires specialized handling (SMOTE, class weights, anomaly detection)
+All three methods operate **without fraud labels during training** — labels are used only for post-hoc evaluation.
 
 ---
 
-## Technologies Used
+## ❓ Research Questions
 
-**Languages & Libraries:**
-- Python 3.10+
-- pandas 2.2.2
-- NumPy
-- Matplotlib
-- Seaborn
+**RQ1 (Course — Anomaly Detection):** Do fraud transactions form geometrically isolable anomalies in feature space, and does tree-based isolation (Isolation Forest) outperform density-based proximity (LOF)?
 
-**Development Environment:**
-- Google Colab
-- Jupyter Notebook
+**RQ2 (Course — Clustering):** Does unsupervised transaction clustering recover behaviorally coherent fraud concentrations without access to labels?
 
-**Version Control:**
-- Git
-- GitHub
+**RQ3 (External — Deep Anomaly Detection):** Does the normal-class transaction manifold carry a nonlinear reconstruction signal strong enough to outperform classical anomaly detectors?
 
 ---
 
-## Planned Techniques
+## 📊 Dataset
 
-### Course-Aligned Techniques
-- Anomaly detection (fraud as rare events)
-- Clustering (K-means, DBSCAN)
-- Classification (with class imbalance handling)
+| Property | Value |
+|----------|-------|
+| **Name** | Credit Card Fraud Detection |
+| **Source** | [ULB Machine Learning Group / Kaggle](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) / [TensorFlow mirror](https://storage.googleapis.com/download.tensorflow.org/data/creditcard.csv) |
+| **Size** | 284,807 transactions × 31 features |
+| **Features** | `Time`, `V1`–`V28` (PCA-anonymous), `Amount`, `Class` |
+| **Class imbalance** | 492 fraud (0.17%) vs 284,315 normal — **577:1** |
+| **Time window** | 48 hours, September 2013, European cardholders |
+| **License** | Open Database License (ODbL) |
+| **Missing values** | None |
 
-### Beyond-Course Techniques
-1. **Autoencoders** - Deep learning for anomaly detection via reconstruction error
-2. **Isolation Forest** - Tree-based anomaly detection algorithm
-3. **SMOTE** - Synthetic minority oversampling for imbalance handling
-4. **One-Class SVM** - Semi-supervised anomaly detection
+**Data access:** The notebook downloads the dataset automatically from the TensorFlow public mirror. No manual download needed. If the download fails, download `creditcard.csv` from Kaggle and place it in a `data/` folder.
+
+### Preprocessing
+
+| Feature | Treatment | Rationale |
+|---------|-----------|-----------|
+| V1–V28 | No scaling | Already zero-mean, unit-variance (PCA-constructed) |
+| Amount | RobustScaler (fit on normal class only) | Right-skewed; outliers must not dominate scale |
+| Time | RobustScaler (fit on normal class only) | Raw range 0–172,792 would dominate distance calculations |
 
 ---
 
-## How to Run
+## 🏆 Key Results
 
-### Prerequisites
-```bash
-# Install required packages
-pip install pandas numpy matplotlib seaborn scikit-learn
-```
+| Method | PR-AUC | Notes |
+|--------|--------|-------|
+| Random baseline | 0.0017 | All-positive classifier |
+| Isolation Forest (best) | *see notebook* | Top-ADI-8, optimized contamination |
+| LOF (best) | *see notebook* | k-NN sweep |
+| Linear PCA Proxy | *see notebook* | Normal-fit PCA, linear reconstruction |
+| **MLP Autoencoder (best)** | **see notebook** | **Winner — Bottleneck & depth swept** |
 
-### Running the Notebook
+**Big Takeaway:** Fraud in this dataset is geometrically *subtle*, not dramatic. Tree-based isolation methods underperform because fraud is not simply isolated in random-split space. The reconstruction-based autoencoder — trained only on normal transactions — dramatically outperforms classical anomaly detectors by learning the full joint structure of normal behavior and flagging deviations from it.
 
-**Option 1: Google Colab (Recommended)**
+**Custom metrics introduced:**
+- **ADI (Anomaly Discriminability Index):** `ADI(f) = KS(f) × |mean_fraud(f) − mean_normal(f)|` — combines distributional shape separation with mean shift
+- **TFCS (Temporal Fraud Concentration Score):** KL divergence between fraud and normal temporal distributions — confirmed significant at p < 0.001 via 200-permutation test
+
+---
+
+## 🔁 How to Reproduce
+
+### Recommended: Google Colab
+
 1. Open [Google Colab](https://colab.research.google.com/)
-2. Upload `checkpoint1_dataset_selection_eda.ipynb`
-3. Run all cells sequentially
-4. Datasets will download automatically
+2. Upload `main_notebook.ipynb`
+3. Run all cells sequentially — dataset downloads automatically
+4. Runtime: ~20–40 minutes depending on Colab GPU availability
 
-**Option 2: Local Jupyter**
+### Local (Jupyter)
+
 ```bash
-# Clone repository
-git clone https://github.com/YOUR_USERNAME/credit-card-fraud-detection.git
-cd credit-card-fraud-detection
+# Clone the repository
+git clone https://github.com/JessicaSinghSyal/DMA_Assignment_337001834_JessicaSinghSyal.git
+cd DMA_Assignment_337001834_JessicaSinghSyal
+
+# Install dependencies
+pip install -r requirements.txt
 
 # Launch Jupyter
-jupyter notebook checkpoint1_dataset_selection_eda.ipynb
+jupyter notebook main_notebook.ipynb
+```
+
+**Python version:** 3.10+ (developed on Colab — Python 3.10.12)
+
+---
+
+## 📦 Key Dependencies
+
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `python` | 3.10+ | Runtime |
+| `numpy` | 1.26+ | Numerical computation |
+| `pandas` | 2.2+ | Data handling |
+| `scikit-learn` | 1.4+ | Isolation Forest, LOF, DBSCAN, K-Means, metrics |
+| `torch` | 2.2+ | MLP Autoencoder |
+| `matplotlib` | 3.8+ | Visualizations |
+| `seaborn` | 0.13+ | Statistical plots |
+| `scipy` | 1.12+ | KS test, KL divergence |
+
+Full dependency list: [`requirements.txt`](requirements.txt)
+
+---
+
+## 🗂 Repository Structure
+
+```
+DMA_Assignment_337001834_JessicaSinghSyal/
+│
+├── main_notebook.ipynb          # 👉 THE MAIN DELIVERABLE — start here
+├── README.md                    # This file
+├── requirements.txt             # Full dependency list
+│
+├── checkpoints/
+│   ├── checkpoint_1.ipynb       # Dataset selection & initial EDA
+│   └── checkpoint_2.ipynb       # Research question formation
+│
+├── assets/                      # Auto-generated by main_notebook
+│   ├── eda1_imbalance.png
+│   ├── eda2_adi.png
+│   ├── eda3_amount_paradox.png
+│   ├── eda4_tfcs.png
+│   ├── eda5_pca.png
+│   ├── eda6_proxy.png
+│   ├── rq1_results.png
+│   ├── rq1_best_if.png
+│   ├── rq2_clustering.png
+│   ├── rq3_autoencoder.png
+│   └── final_comparison.png
+│
+└── data/                        # Downloaded automatically by notebook
+    └── creditcard.csv           # (not tracked — auto-downloaded)
 ```
 
 ---
 
-## Results & Visualizations
+## 📚 Citations
 
-### Comparison Analysis
-- Comprehensive comparison table across 3 datasets
-- Evaluation on: data quality, algorithmic feasibility, bias, ethics
+**Dataset:**
+> Dal Pozzolo, A., Caelen, O., Johnson, R. A., & Bontempi, G. (2015). *Calibrating Probability with Undersampling for Unbalanced Classification*. IEEE Symposium on Computational Intelligence and Data Mining.
 
-### EDA Highlights
-- Class distribution showing 577:1 imbalance
-- Feature importance ranking (V3, V14, V17 top discriminators)
-- Temporal fraud rate patterns
-- Amount distribution analysis
+**Methods:**
+> Liu, F. T., Ting, K. M., & Zhou, Z. H. (2008). *Isolation Forest*. ICDM 2008.  
+> Breunig, M. M., Kriegel, H. P., Ng, R. T., & Sander, J. (2000). *LOF: Identifying Density-Based Local Outliers*. SIGMOD 2000.
 
-### Visual Gallery
-See `/visualizations/` folder for:
-- Fraud vs. normal distribution comparisons
-- Feature importance bar charts
-- Temporal pattern analysis
-- Correlation heatmaps
+**License:** ODbL v1.0 (dataset) | This project is for educational purposes as part of a graduate-level Data Mining course at Texas A&M University.
 
 ---
 
-## Future Work (Checkpoint 2 & 3)
-
-**Next Steps:**
-1. Implement baseline models (Logistic Regression, Random Forest)
-2. Apply Isolation Forest for anomaly detection
-3. Train autoencoders for reconstruction-based detection
-4. Evaluate with SMOTE oversampling
-5. Compare precision-recall across all methods
-6. Business-focused recommendations (cost-benefit analysis)
-
----
-
-## Citations
-
-**Datasets:**
-- Dal Pozzolo, A., et al. (2015). "Calibrating Probability with Undersampling for Unbalanced Classification." *IEEE Symposium on Computational Intelligence*.
-- Harper, F.M., Konstan, J.A. (2015). "The MovieLens Datasets: History and Context." *ACM TiiS*.
-- Almeida, T.A., Hidalgo, J.M.G. (2011). "Contributions to the Study of SMS Spam Filtering." *ACM Document Engineering*.
-
----
-
-## License
-
-This project is for educational purposes as part of a graduate-level Data Mining course.
-
-Datasets used are publicly available and cited appropriately:
-- Credit Card Fraud: Open Database License (ODbL)
-- MovieLens: Available for research and education
-- SMS Spam: Public domain (UCI repository)
-
----
-
-## Contact
-
-**Jessica Singh Syal**  
-UIN: 337001834
-Graduate Student, Computer Science  
-Texas A&M University  
-Email: jessicasinghsyalinternship@gmail.com
-
----
-
-## Acknowledgments
-
-- **Anthropic Claude** for code generation assistance and documentation
-- **GroupLens Research** for MovieLens dataset
-- **UCI Machine Learning Repository** for SMS Spam dataset
-- **Kaggle Community** for fraud detection dataset and kernels
-
----
-
-
-
-
-## Progress Made:
-
-
-Checkpoint 2 — Research Question Formation ✅ Complete
-
-Research Questions:
-
-RQ1 (Course — Anomaly Detection): Do fraud transactions form statistically isolable anomalies in feature space that tree-based detectors exploit better than density-based ones? Investigated using Isolation Forest and Local Outlier Factor across four feature subsets defined by the Anomaly Discriminability Index (ADI). Evaluated by PR-AUC at optimal F1 threshold.
-
-RQ2 (Course — Clustering): Does unsupervised transaction clustering recover behaviorally coherent fraud concentrations without access to labels? Investigated using DBSCAN and K-Means across 8D PCA and Top-ADI-8 feature representations. Evaluated by fraud enrichment ratio (cluster fraud rate / dataset fraud rate) and Silhouette coefficient.
-
-RQ3 (External — Deep Anomaly Detection): Does the normal-class transaction manifold carry a nonlinear reconstruction signal strong enough to outperform classical anomaly detectors? Investigated using a trained MLP Autoencoder (external technique) across 9 architecture configurations (bottleneck ∈ {4, 8, 16}, depth ∈ {1, 2, 3}). Evaluated by PR-AUC against the IF baseline (0.1691) and linear PCA proxy baseline (0.6210).
-
-Custom Metrics Defined:
-
-Two new metrics were introduced and empirically validated:
-
-1. Anomaly Discriminability Index (ADI) — ADI(f) = KS(f) × |mean_fraud(f) − mean_normal(f)|. Spans a 7229× range across 28 V features (V14 highest at 5.89, V22 lowest at 0.0008), formally defining the Top-ADI-8 feature subset used in RQ1 and RQ2.
-
-2. Temporal Fraud Concentration Score (TFCS) — KL divergence between fraud and normal temporal distributions. Observed TFCS = 0.2935, confirmed statistically significant at p < 0.001 (100th percentile of 200-permutation null distribution), with a 30.5× peak-to-trough fraud rate concentration across the 48-hour window.
-
-
--Key EDA Findings
-
-Five new EDA analyses beyond Checkpoint 1 were conducted and used to directly motivate or rule out methodological choices:
-
-1. ADI ranking confirmed 64.6% of fraud is spatially isolated in PCA space (isolation ratio 5.08×), motivating both the feature subset sweep in RQ1 and the clustering approach in RQ2
-2. TFCS permutation test confirmed Time carries a statistically real fraud signal, justifying its inclusion as a feature
-3. Linear reconstruction proxy (PCA trained on normals only) achieved PR-AUC = 0.6210 — 359× above random — validating the autoencoder hypothesis before any deep learning is built
-
-
-
+*Jessica Singh Syal | jessicasinghsyalinternship@gmail.com | Texas A&M University*
 
 
 
